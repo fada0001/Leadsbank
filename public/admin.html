@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Dashboard — Leads Bank</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="dash-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand"><img src="assets/logo.png" alt="" /> Leads Bank</div>
+      <nav class="sidebar-nav">
+        <a href="admin.html" class="active">Dashboard</a>
+        <a href="admin-customers.html">Customers</a>
+        <a href="admin-approvals.html">Approvals</a>
+        <a href="admin-messages.html">Messages</a>
+        <a href="admin-notifications.html">Send Notification</a>
+        <a href="#" id="logoutAdmin">Sign Out</a>
+      </nav>
+      <div class="sidebar-footer">Logged in as Owner</div>
+    </aside>
+    <div class="main-content">
+      <nav class="admin-mobile-nav">
+        <a href="admin.html" class="active">Dashboard</a>
+        <a href="admin-customers.html">Customers</a>
+        <a href="admin-approvals.html">Approvals</a>
+        <a href="admin-messages.html">Messages</a>
+        <a href="admin-notifications.html">Notify</a>
+      </nav>
+      <div class="topbar"><h2>Owner Dashboard</h2><div class="user-chip"><div class="avatar">AD</div><span>Administrator</span></div></div>
+      <div class="content-area">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="label">Total Customers</div><div class="value" id="totalCustomers">0</div><div class="sub">Registered accounts</div></div>
+          <div class="stat-card"><div class="label">Total Deposits</div><div class="value" id="totalDeposits">$0</div><div class="sub">Across all accounts</div></div>
+          <div class="stat-card"><div class="label">Pending Approvals</div><div class="value" id="pending">0</div><div class="sub">Transfer requests</div></div>
+          <div class="stat-card"><div class="label">Open Messages</div><div class="value" id="openMsg">0</div><div class="sub">From customers</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3>All Customers (newest first)</h3>
+            <a href="admin-customers.html" class="btn btn-secondary btn-sm">Full list & search</a>
+          </div>
+          <div class="card-body" style="padding:0;overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Account ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Account Type</th>
+                  <th>Routing #</th>
+                  <th>Account #</th>
+                  <th>Balance</th>
+                  <th>Opened</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="custBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="js/api.js"></script>
+  <script>
+    if (!requireAdminPage()) throw 0;
+
+    async function loadDashboard() {
+      try {
+        const stats = await api("/api/admin/stats", { auth: "admin" });
+        document.getElementById("totalCustomers").textContent = stats.customers;
+        document.getElementById("totalDeposits").textContent = formatMoney(stats.deposits);
+        document.getElementById("pending").textContent = stats.pending;
+        document.getElementById("openMsg").textContent = stats.openMsg;
+
+        const { customers } = await api("/api/admin/customers", { auth: "admin" });
+        const tb = document.getElementById("custBody");
+        tb.innerHTML = "";
+        (customers || []).forEach(u => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><strong>${u.id}</strong></td>
+            <td>${u.firstName} ${u.lastName}</td>
+            <td>${u.email}</td>
+            <td>${u.phone || "—"}</td>
+            <td>${u.accountType}</td>
+            <td>${u.routingNumber || "—"}</td>
+            <td>${u.accountNumber || "—"}</td>
+            <td style="text-align:right;font-weight:600">${formatMoney(u.balance)}</td>
+            <td>${u.createdAt}</td>
+            <td><a href="admin-customer.html?email=${encodeURIComponent(u.email)}" class="btn btn-secondary btn-sm">View</a></td>`;
+          tb.appendChild(tr);
+        });
+        if (!(customers || []).length) {
+          tb.innerHTML = '<tr><td colspan="10" style="color:var(--text-soft)">No customers yet</td></tr>';
+        }
+      } catch (e) {
+        setAdminToken("");
+        location.href = "admin-login.html";
+      }
+    }
+
+    loadDashboard();
+    // Auto-refresh every 15 seconds so new signups appear while people are registering
+    setInterval(loadDashboard, 15000);
+
+    document.getElementById("logoutAdmin").onclick = e => { e.preventDefault(); setAdminToken(""); location.href = "admin-login.html"; };
+  </script>
+</body>
+</html>
