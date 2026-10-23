@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Open an Account — Leads Bank</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a href="index.html" class="brand"><img src="assets/logo.png" alt="Leads Bank" /> Leads Bank</a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="login.html" class="btn btn-outline btn-sm">Customer Login</a>
+    </nav>
+  </header>
+  <div class="auth-page">
+    <div class="auth-card wide">
+      <h1>Open a Personal Account</h1>
+      <p class="subtitle">Complete the form below to create your account.</p>
+      <div class="error-msg" id="error"></div>
+      <div class="success-msg" id="success"></div>
+      <form id="regForm">
+        <div class="form-row">
+          <div class="form-group"><label>First Name</label><input type="text" id="firstName" required placeholder="John" /></div>
+          <div class="form-group"><label>Last Name</label><input type="text" id="lastName" required placeholder="Kline" /></div>
+        </div>
+        <div class="form-group"><label>Email Address</label><input type="email" id="email" required placeholder="you@example.com" /></div>
+        <div class="form-group"><label>Phone Number</label><input type="tel" id="phone" required placeholder="(555) 123-4567" /></div>
+        <div class="form-group"><label>Street Address</label><input type="text" id="address" required placeholder="123 Main Street" /></div>
+        <div class="form-row">
+          <div class="form-group"><label>City</label><input type="text" id="city" required placeholder="Ashburn" /></div>
+          <div class="form-group"><label>State</label>
+            <select id="state" required>
+              <option value="">Select</option>
+              <option>VA</option><option>MD</option><option>DC</option><option>NY</option>
+              <option>CA</option><option>TX</option><option>FL</option><option>IL</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>ZIP Code</label><input type="text" id="zip" required placeholder="20147" maxlength="10" /></div>
+          <div class="form-group"><label>SSN (Last 4 digits)</label><input type="text" id="ssnLast4" required placeholder="1234" maxlength="4" pattern="[0-9]{4}" />
+            <div class="form-hint">For identity verification</div>
+          </div>
+        </div>
+        <div class="form-group"><label>Account Type</label>
+          <select id="accountType" required>
+            <option value="Checking">Personal Checking</option>
+            <option value="Savings">Personal Savings</option>
+            <option value="Business Checking">Business Checking</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Create Password</label><input type="password" id="password" required minlength="8" placeholder="Min. 8 characters" /></div>
+          <div class="form-group"><label>Confirm Password</label><input type="password" id="password2" required placeholder="Re-enter password" /></div>
+        </div>
+        <div class="form-group" style="display:flex;align-items:flex-start;gap:8px;margin-top:8px">
+          <input type="checkbox" id="agree" required style="width:auto;margin-top:3px" />
+          <label for="agree" style="font-weight:400;font-size:0.85rem">I agree to the Account Agreement and Electronic Communications Disclosure.</label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top:14px">Submit Application</button>
+      </form>
+      <div class="auth-footer">Already have an account? <a href="login.html">Sign in</a></div>
+    </div>
+  </div>
+  <script src="js/api.js"></script>
+  <script>
+    document.getElementById("regForm").onsubmit = async function(e) {
+      e.preventDefault();
+      const err = document.getElementById("error");
+      const ok = document.getElementById("success");
+      err.style.display = ok.style.display = "none";
+      if (document.getElementById("password").value !== document.getElementById("password2").value) {
+        err.textContent = "Passwords do not match."; err.style.display = "block"; return;
+      }
+      try {
+        const data = await api("/api/register", {
+          method: "POST",
+          body: {
+            firstName: document.getElementById("firstName").value.trim(),
+            lastName: document.getElementById("lastName").value.trim(),
+            email: document.getElementById("email").value.trim(),
+            phone: document.getElementById("phone").value.trim(),
+            address: document.getElementById("address").value.trim(),
+            city: document.getElementById("city").value.trim(),
+            state: document.getElementById("state").value,
+            zip: document.getElementById("zip").value.trim(),
+            ssnLast4: document.getElementById("ssnLast4").value.trim(),
+            password: document.getElementById("password").value,
+            accountType: document.getElementById("accountType").value
+          }
+        });
+        setToken(data.token);
+        ok.textContent = "Application submitted. Redirecting...";
+        ok.style.display = "block";
+        setTimeout(() => location.href = "dashboard.html", 800);
+      } catch (ex) {
+        err.textContent = ex.message; err.style.display = "block";
+      }
+    };
+  </script>
+</body>
+</html>

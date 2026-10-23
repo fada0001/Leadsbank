@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Customers — Leads Bank Admin</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="dash-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand"><img src="assets/logo.png" alt="" /> Leads Bank</div>
+      <nav class="sidebar-nav">
+        <a href="admin.html">Dashboard</a>
+        <a href="admin-customers.html" class="active">Customers</a>
+        <a href="admin-approvals.html">Approvals</a>
+        <a href="admin-messages.html">Messages</a>
+        <a href="admin-notifications.html">Send Notification</a>
+        <a href="#" id="logoutAdmin">Sign Out</a>
+      </nav>
+      <div class="sidebar-footer">Logged in as Owner</div>
+    </aside>
+    <div class="main-content">
+      <div class="topbar"><h2>Customers</h2><div class="user-chip"><div class="avatar">AD</div><span>Administrator</span></div></div>
+      <div class="content-area">
+        <div class="card">
+          <div class="card-header">
+            <h3>All Accounts</h3>
+            <input type="search" id="search" placeholder="Search name, email, account..." style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;width:240px;font-size:0.9rem" />
+          </div>
+          <div class="card-body" style="padding:0;overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Account ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Type</th>
+                  <th>Routing #</th>
+                  <th>Account #</th>
+                  <th>Opened</th>
+                  <th>Balance</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="custBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="js/api.js"></script>
+  <script>
+    if (!requireAdminPage()) throw 0;
+    async function render(q = "") {
+      try {
+        const { customers } = await api("/api/admin/customers?q=" + encodeURIComponent(q), { auth: "admin" });
+        const tb = document.getElementById("custBody");
+        tb.innerHTML = "";
+        if (!(customers || []).length) {
+          tb.innerHTML = '<tr><td colspan="8" style="color:var(--text-soft)">No customers found</td></tr>';
+          return;
+        }
+        customers.forEach(u => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td><strong>${u.id}</strong></td>
+            <td>${u.firstName} ${u.lastName}</td>
+            <td>${u.email}</td>
+            <td>${u.phone || "—"}</td>
+            <td>${u.accountType}</td>
+            <td>${u.routingNumber || "—"}</td>
+            <td>${u.accountNumber || "—"}</td>
+            <td>${u.createdAt}</td>
+            <td style="text-align:right;font-weight:600">${formatMoney(u.balance)}</td>
+            <td><span class="badge badge-green">${u.status || "active"}</span></td>
+            <td><a href="admin-customer.html?email=${encodeURIComponent(u.email)}" class="btn btn-secondary btn-sm">View</a></td>`;
+          tb.appendChild(tr);
+        });
+      } catch (e) {
+        setAdminToken(""); location.href = "admin-login.html";
+      }
+    }
+    render();
+    let t; document.getElementById("search").oninput = e => { clearTimeout(t); t = setTimeout(() => render(e.target.value), 250); };
+    document.getElementById("logoutAdmin").onclick = e => { e.preventDefault(); setAdminToken(""); location.href = "admin-login.html"; };
+  </script>
+</body>
+</html>
