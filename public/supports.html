@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Support — Leads Bank</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="dash-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand"><img src="assets/logo.png" alt="" /> Leads Bank</div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html">Overview</a>
+        <a href="transfers.html">Transfers</a>
+        <a href="statements.html">Statements</a>
+        <a href="support.html" class="active">Support</a>
+        <a href="profile.html">Profile</a>
+        <a href="#" id="logoutLink">Sign Out</a>
+      </nav>
+      <div class="sidebar-footer" id="sideUser"></div>
+    </aside>
+    <div class="main-content">
+      <div class="topbar"><h2>Customer Care</h2><div class="user-chip"><div class="avatar" id="avatar"></div><span id="userName"></span></div></div>
+      <div class="content-area">
+        <div class="card" style="max-width:560px">
+          <div class="card-header"><h3>Contact Support</h3></div>
+          <div class="card-body">
+            <div class="error-msg" id="error"></div>
+            <div class="success-msg" id="success"></div>
+            <form id="msgForm">
+              <div class="form-group"><label>Subject</label>
+                <select id="subject" required>
+                  <option value="">Select a topic</option>
+                  <option>Account inquiry</option><option>Transfer issue</option>
+                  <option>Card or debit</option><option>Technical problem</option><option>Other</option>
+                </select>
+              </div>
+              <div class="form-group"><label>Message</label>
+                <textarea id="message" required rows="5" style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.95rem;font-family:inherit;resize:vertical"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Send Message</button>
+            </form>
+          </div>
+        </div>
+        <div class="card"><div class="card-header"><h3>Your Conversations</h3></div><div class="card-body" id="thread" style="font-size:0.9rem"></div></div>
+      </div>
+    </div>
+  </div>
+  <script src="js/api.js"></script>
+  <script>
+    if (!requireCustomerPage()) throw 0;
+    async function load() {
+      try {
+        const { user } = await api("/api/me", { auth: "customer" });
+        document.getElementById("userName").textContent = user.firstName + " " + user.lastName;
+        document.getElementById("avatar").textContent = (user.firstName[0] + user.lastName[0]).toUpperCase();
+        document.getElementById("sideUser").textContent = user.email;
+      } catch (e) {}
+      try {
+        const { messages } = await api("/api/me/messages", { auth: "customer" });
+        const box = document.getElementById("thread");
+        if (!(messages || []).length) {
+          box.innerHTML = '<p style="color:var(--text-soft)">No messages yet. Write a complaint below.</p>';
+          return;
+        }
+        box.innerHTML = messages.map(m => {
+          const isAdmin = m.from === "admin";
+          return `<div style="background:${isAdmin ? "#f0f2ff" : "#f8f9fa"};border-radius:10px;padding:14px 16px;margin-bottom:12px;border:1px solid var(--border)">
+            <div style="font-size:0.75rem;color:var(--text-soft);margin-bottom:6px"><strong>${isAdmin ? "Leads Bank Support" : "You"}</strong> · ${m.date}${m.subject ? " · " + m.subject : ""}</div>
+            <div style="white-space:pre-wrap">${m.body}</div></div>`;
+        }).join("");
+      } catch (e) {
+        document.getElementById("thread").innerHTML = '<p style="color:var(--text-soft)">Could not load messages. You can still send a new one below.</p>';
+      }
+    }
+    load();
+    document.getElementById("msgForm").onsubmit = async function(e) {
+      e.preventDefault();
+      const err = document.getElementById("error");
+      const ok = document.getElementById("success");
+      err.style.display = ok.style.display = "none";
+      const body = document.getElementById("message").value.trim();
+      if (!body) { err.textContent = "Please enter a message."; err.style.display = "block"; return; }
+      try {
+        await api("/api/me/messages", { auth: "customer", method: "POST", body: {
+          subject: document.getElementById("subject").value || "Support request",
+          body: body
+        }});
+        ok.textContent = "Message sent to customer care.";
+        ok.style.display = "block";
+        document.getElementById("msgForm").reset();
+        load();
+      } catch (ex) {
+        err.textContent = ex.message || "Failed to send. Try again.";
+        err.style.display = "block";
+      }
+    };
+    document.getElementById("logoutLink").onclick = e => { e.preventDefault(); setToken(""); location.href = "login.html"; };
+  </script>
+</body>
+</html>
