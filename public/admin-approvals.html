@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Approvals — Leads Bank Admin</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="dash-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand"><img src="assets/logo.png" alt="" /> Leads Bank</div>
+      <nav class="sidebar-nav">
+        <a href="admin.html">Dashboard</a>
+        <a href="admin-customers.html">Customers</a>
+        <a href="admin-approvals.html" class="active">Approvals</a>
+        <a href="admin-messages.html">Messages</a>
+        <a href="admin-notifications.html">Send Notification</a>
+        <a href="#" id="logoutAdmin">Sign Out</a>
+      </nav>
+      <div class="sidebar-footer">Logged in as Owner</div>
+    </aside>
+    <div class="main-content">
+      <div class="topbar"><h2>Transfer Approvals</h2><div class="user-chip"><div class="avatar">AD</div><span>Administrator</span></div></div>
+      <div class="content-area">
+        <div class="card">
+          <div class="card-header"><h3>Pending & Recent Requests</h3></div>
+          <div class="card-body" style="padding:0">
+            <table><thead><tr><th>Date</th><th>Customer</th><th>Details</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="reqBody"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="js/api.js"></script>
+  <script>
+    if (!requireAdminPage()) throw 0;
+    async function render() {
+      try {
+        const { requests } = await api("/api/admin/requests", { auth: "admin" });
+        const tb = document.getElementById("reqBody");
+        tb.innerHTML = "";
+        if (!(requests || []).length) {
+          tb.innerHTML = '<tr><td colspan="6" style="color:var(--text-soft)">No transfer requests</td></tr>';
+          return;
+        }
+        requests.forEach(r => {
+          const badge = r.status === "pending" ? "badge-blue" : r.status === "approved" ? "badge-green" : "badge-gray";
+          const typeLabel = (r.type === "add_funds") ? "Add Funds" : "Transfer";
+          let actions = "—";
+          if (r.status === "pending") {
+            actions = `<button class="btn btn-primary btn-sm" data-act="approve" data-id="${r.id}">Approve</button>
+                       <button class="btn btn-secondary btn-sm" data-act="decline" data-id="${r.id}" style="margin-left:6px">Decline</button>`;
+          }
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${r.date}</td><td>${r.userName}<br><span style="font-size:0.75rem;color:var(--text-soft)">${r.email}</span></td>
+            <td><span class="badge badge-blue">${typeLabel}</span> ${r.details || ""}</td><td>${formatMoney(r.amount)}</td>
+            <td><span class="badge ${badge}">${r.status}</span></td><td>${actions}</td>`;
+          tb.appendChild(tr);
+        });
+        tb.querySelectorAll("button[data-act]").forEach(btn => {
+          btn.onclick = async () => {
+            try {
+              await api(`/api/admin/requests/${btn.dataset.id}/${btn.dataset.act}`, { auth: "admin", method: "POST" });
+              render();
+            } catch (ex) { alert(ex.message); }
+          };
+        });
+      } catch (e) {
+        setAdminToken(""); location.href = "admin-login.html";
+      }
+    }
+    render();
+    document.getElementById("logoutAdmin").onclick = e => { e.preventDefault(); setAdminToken(""); location.href = "admin-login.html"; };
+  </script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Add Funds — Leads Bank</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="mobile-dash">
+  <div class="dash-layout">
+    <div class="main-content">
+      <div class="content-area">
+        <div class="m-dash">
+          <div style="margin-bottom:16px"><a href="dashboard.html" class="btn btn-secondary btn-sm">← Back</a></div>
+          <h2 style="margin-bottom:8px">Add Funds</h2>
+          <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:20px">Submit a request to add funds to your account. An administrator will review and approve it.</p>
+
+          <div class="card" style="max-width:420px">
+            <div class="card-body">
+              <div class="error-msg" id="error"></div>
+              <div class="success-msg" id="success"></div>
+              <form id="addForm">
+                <div class="form-group">
+                  <label>Amount (USD)</label>
+                  <input type="number" id="amount" required min="1" step="0.01" placeholder="100.00" />
+                </div>
+                <div class="form-group">
+                  <label>Note (optional)</label>
+                  <input type="text" id="memo" placeholder="e.g. Payroll, deposit, etc." maxlength="60" />
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Request Funds</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:20px">
+            <div class="card-header"><h3>Your Fund Requests</h3></div>
+            <div class="card-body" style="padding:0">
+              <table>
+                <thead><tr><th>Date</th><th>Note</th><th>Amount</th><th>Status</th></tr></thead>
+                <tbody id="reqBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="m-bottom-nav">
+    <a href="dashboard.html" class="m-nav-item"><span class="ico">🏠</span>Home</a>
+    <a href="statements.html" class="m-nav-item"><span class="ico">📊</span>Activity</a>
+    <a href="transfers.html" class="m-nav-item"><span class="ico">💳</span>Transfer</a>
+    <a href="support.html" class="m-nav-item"><span class="ico">💬</span>Support</a>
+    <a href="profile.html" class="m-nav-item"><span class="ico">⚙️</span>Settings</a>
+  </nav>
+
+  <script src="js/api.js"></script>
+  <script>
+    if (!requireCustomerPage()) throw 0;
+    async function loadReqs() {
+      try {
+        const { requests } = await api("/api/me/requests", { auth: "customer" });
+        const list = (requests || []).filter(r => r.type === "add_funds");
+        const tb = document.getElementById("reqBody");
+        tb.innerHTML = "";
+        if (!list.length) {
+          tb.innerHTML = '<tr><td colspan="4" style="color:var(--text-soft)">No fund requests yet</td></tr>';
+          return;
+        }
+        list.forEach(r => {
+          const badge = r.status === "pending" ? "badge-blue" : r.status === "approved" ? "badge-green" : "badge-gray";
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${r.date}</td><td>${r.details || "—"}</td><td>${formatMoney(r.amount)}</td>
+            <td><span class="badge ${badge}">${r.status}</span></td>`;
+          tb.appendChild(tr);
+        });
+      } catch (e) {}
+    }
+    loadReqs();
+
+    document.getElementById("addForm").onsubmit = async function(e) {
+      e.preventDefault();
+      const err = document.getElementById("error");
+      const ok = document.getElementById("success");
+      err.style.display = ok.style.display = "none";
+      try {
+        await api("/api/me/add-funds-request", {
+          auth: "customer",
+          method: "POST",
+          body: {
+            amount: parseFloat(document.getElementById("amount").value),
+            memo: document.getElementById("memo").value.trim()
+          }
+        });
+        ok.textContent = "Fund request submitted for admin review.";
+        ok.style.display = "block";
+        document.getElementById("addForm").reset();
+        loadReqs();
+      } catch (ex) {
+        err.textContent = ex.message;
+        err.style.display = "block";
+      }
+    };
+  </script>
+</body>
+</html>
