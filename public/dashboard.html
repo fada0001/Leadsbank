@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Home — Leads Bank</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="mobile-dash">
+  <div class="dash-layout">
+    <div class="main-content">
+      <div class="content-area">
+        <div class="m-dash">
+          <!-- Greeting -->
+          <div class="m-greet">
+            <div class="m-greet-left">
+              <div class="m-avatar" id="avatar">JK</div>
+              <div>
+                <h1 id="greetTitle">Hi there</h1>
+                <div class="sub" id="greetSub">Welcome back</div>
+              </div>
+            </div>
+            <div class="m-icons">
+              <a href="notifications.html" class="m-icon-btn" title="Notifications">🔔</a>
+              <button type="button" class="m-icon-btn" id="menuBtn" title="Menu" style="border:none;background:white;cursor:pointer;">☰</button>
+            </div>
+          </div>
+
+          <!-- Balance card (moved up) -->
+          <div class="m-balance-card">
+            <div class="m-currency-pill">🇺🇸 USD ▾</div>
+            <div class="m-balance-amount" id="balance">$0.00</div>
+            <div class="m-acct-chip">🏦 <span id="acctChip">•••• 0000</span></div>
+          </div>
+
+          <!-- Primary actions -->
+          <div class="m-actions">
+            <a class="m-action" href="add-funds.html">
+              <div class="m-action-btn">+</div>
+              <span>Add funds</span>
+            </a>
+            <a class="m-action" href="transfers.html">
+              <div class="m-action-btn">↗</div>
+              <span>Transfer</span>
+            </a>
+            <a class="m-action" href="statements.html">
+              <div class="m-action-btn">⟳</div>
+              <span>History</span>
+            </a>
+            <a class="m-action" href="profile.html">
+              <div class="m-action-btn">👤</div>
+              <span>Profile</span>
+            </a>
+          </div>
+
+          <!-- Quick actions (only Statements) -->
+          <div class="m-section-title">Quick actions</div>
+          <div class="m-quick">
+            <a class="m-quick-item" href="statements.html">
+              <div class="m-quick-icon">📄</div>
+              <span>Statements</span>
+            </a>
+          </div>
+
+          <!-- Recent activity -->
+          <div class="m-section-title">Recent activity</div>
+          <div class="m-tx-list" id="txList">
+            <div class="m-tx-item"><div class="m-tx-left"><div class="m-tx-desc">Loading…</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu overlay -->
+  <div id="menuOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;">
+    <div style="position:absolute;top:60px;right:16px;background:white;border-radius:14px;padding:8px 0;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,0.12);">
+      <a href="statements.html" style="display:block;padding:12px 18px;color:#111;text-decoration:none;font-size:0.9rem;">Statements</a>
+      <a href="transfers.html" style="display:block;padding:12px 18px;color:#111;text-decoration:none;font-size:0.9rem;">Card</a>
+      <a href="support.html" style="display:block;padding:12px 18px;color:#111;text-decoration:none;font-size:0.9rem;">Support</a>
+      <a href="profile.html" style="display:block;padding:12px 18px;color:#111;text-decoration:none;font-size:0.9rem;">Profile</a>
+      <a href="notifications.html" style="display:block;padding:12px 18px;color:#111;text-decoration:none;font-size:0.9rem;">Notifications</a>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="m-bottom-nav">
+    <a href="dashboard.html" class="m-nav-item active"><span class="ico">🏠</span>Home</a>
+    <a href="statements.html" class="m-nav-item"><span class="ico">📊</span>Activity</a>
+    <a href="transfers.html" class="m-nav-item"><span class="ico">💳</span>Card</a>
+    <a href="support.html" class="m-nav-item"><span class="ico">💬</span>Support</a>
+    <a href="profile.html" class="m-nav-item"><span class="ico">⚙️</span>Settings</a>
+  </nav>
+
+  <script src="js/api.js"></script>
+  <script>
+    if (!requireCustomerPage()) throw 0;
+    (async function() {
+      try {
+        const { user } = await api("/api/me", { auth: "customer" });
+        const { transactions } = await api("/api/me/transactions", { auth: "customer" });
+
+        document.getElementById("greetTitle").textContent = "Hi, " + user.firstName;
+        document.getElementById("greetSub").textContent = user.accountType + " · " + user.id;
+        document.getElementById("avatar").textContent = (user.firstName[0] + user.lastName[0]).toUpperCase();
+        document.getElementById("balance").textContent = formatMoney(user.balance);
+        const last4 = (user.accountNumber || user.id || "").toString().slice(-4);
+        document.getElementById("acctChip").textContent = "•••• " + last4;
+
+        const list = document.getElementById("txList");
+        const txs = (transactions || []).slice().reverse().slice(0, 6);
+        if (!txs.length) {
+          list.innerHTML = '<div class="m-tx-item"><div class="m-tx-left"><div class="m-tx-desc">No transactions yet</div></div></div>';
+        } else {
+          list.innerHTML = txs.map(tx => {
+            const pos = tx.type === "credit";
+            const sign = pos ? "+" : "−";
+            return `<div class="m-tx-item">
+              <div class="m-tx-left">
+                <div class="m-tx-desc">${tx.desc}</div>
+                <div class="m-tx-date">${tx.date}</div>
+              </div>
+              <div class="m-tx-amt ${pos ? "pos" : "neg"}">${sign}${formatMoney(Math.abs(tx.amount))}</div>
+            </div>`;
+          }).join("");
+        }
+      } catch (e) {
+        document.getElementById("greetTitle").textContent = "Hi there";
+        document.getElementById("txList").innerHTML = '<div class="m-tx-item"><div class="m-tx-left"><div class="m-tx-desc">Could not load account. Try refreshing.</div></div></div>';
+      }
+    })();
+    document.getElementById("menuBtn").onclick = function() {
+      const o = document.getElementById("menuOverlay");
+      o.style.display = o.style.display === "none" ? "block" : "none";
+    };
+    document.getElementById("menuOverlay").onclick = function(e) {
+      if (e.target === this) this.style.display = "none";
+    };
+  </script>
+</body>
+</html>
