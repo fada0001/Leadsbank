@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Send Notification — Leads Bank Admin</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="dash-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand"><img src="assets/logo.png" alt="" /> Leads Bank</div>
+      <nav class="sidebar-nav">
+        <a href="admin.html">Dashboard</a>
+        <a href="admin-customers.html">Customers</a>
+        <a href="admin-approvals.html">Approvals</a>
+        <a href="admin-messages.html">Messages</a>
+        <a href="admin-notifications.html" class="active">Send Notification</a>
+        <a href="#" id="logoutAdmin">Sign Out</a>
+      </nav>
+      <div class="sidebar-footer">Logged in as Owner</div>
+    </aside>
+    <div class="main-content">
+      <nav class="admin-mobile-nav">
+        <a href="admin.html">Dashboard</a>
+        <a href="admin-customers.html">Customers</a>
+        <a href="admin-approvals.html">Approvals</a>
+        <a href="admin-messages.html">Messages</a>
+        <a href="admin-notifications.html" class="active">Notify</a>
+      </nav>
+      <div class="topbar"><h2>Send Notification</h2><div class="user-chip"><div class="avatar">AD</div><span>Administrator</span></div></div>
+      <div class="content-area">
+        <div class="card" style="max-width:520px">
+          <div class="card-body">
+            <div class="error-msg" id="error"></div>
+            <div class="success-msg" id="success"></div>
+            <form id="notifForm">
+              <div class="form-group">
+                <label>Customer Email</label>
+                <input type="email" id="email" required placeholder="customer@example.com" />
+              </div>
+              <div class="form-group">
+                <label>Title</label>
+                <input type="text" id="title" required placeholder="Important Update" />
+              </div>
+              <div class="form-group">
+                <label>Message</label>
+                <textarea id="body" required rows="4" style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.95rem;font-family:inherit;resize:vertical" placeholder="Your message to the customer..."></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Send Notification</button>
+            </form>
+            <p style="font-size:0.8rem;color:var(--text-muted);margin-top:14px">
+              The notification will appear in the customer's in-app notification list. In a real bank this would also be emailed.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="js/api.js"></script>
+  <script>
+    if (!requireAdminPage()) throw 0;
+    document.getElementById("notifForm").onsubmit = async function(e) {
+      e.preventDefault();
+      const err = document.getElementById("error");
+      const ok = document.getElementById("success");
+      err.style.display = ok.style.display = "none";
+      try {
+        await api("/api/admin/notifications", {
+          auth: "admin",
+          method: "POST",
+          body: {
+            email: document.getElementById("email").value.trim(),
+            title: document.getElementById("title").value.trim(),
+            body: document.getElementById("body").value.trim()
+          }
+        });
+        ok.textContent = "Notification sent to customer.";
+        ok.style.display = "block";
+        document.getElementById("notifForm").reset();
+      } catch (ex) {
+        err.textContent = ex.message;
+        err.style.display = "block";
+      }
+    };
+    document.getElementById("logoutAdmin").onclick = e => { e.preventDefault(); setAdminToken(""); location.href = "admin-login.html"; };
+  </script>
+</body>
+</html>
