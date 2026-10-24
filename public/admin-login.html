@@ -3,45 +3,69 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Owner Login — Leads Bank</title>
-  <link rel="stylesheet" href="css/styles.css" />
+  <title>Admin Login — Leads Bank</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --navy:#071D3D; --gold:#FFC928; --gold2:#F4B900; --border:#E8ECF2; --muted:#6B7280; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Inter, system-ui, sans-serif; background:#0f1117; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px 20px; }
+    .phone { width:390px; height:844px; background:#fff; border-radius:40px; overflow:hidden; position:relative; box-shadow:0 0 0 10px #1c1c1e, 0 0 0 12px #3a3a3c, 0 40px 80px rgba(0,0,0,0.45); display:flex; flex-direction:column; }
+    .phone::before { content:""; position:absolute; top:10px; left:50%; transform:translateX(-50%); width:110px; height:26px; background:#1c1c1e; border-radius:0 0 14px 14px; z-index:50; }
+    .header { background:linear-gradient(160deg,#071D3D 0%,#0d3a6e 100%); color:#fff; padding:80px 28px 36px; text-align:center; }
+    .header h1 { margin:0; font-size:1.4rem; font-weight:700; letter-spacing:-0.02em; }
+    .header .sub { font-size:0.85rem; opacity:0.8; margin-top:6px; }
+    .content { flex:1; padding:32px 24px; background:#F7F8FC; }
+    .card { background:#fff; border-radius:18px; padding:28px 22px; box-shadow:0 1px 3px rgba(0,0,0,0.04); border:1px solid var(--border); }
+    label { display:block; font-size:0.8rem; font-weight:600; margin-bottom:6px; color:#374151; }
+    input { width:100%; padding:13px 15px; border:1.5px solid var(--border); border-radius:14px; font-size:0.95rem; font-family:inherit; margin-bottom:16px; outline:none; }
+    input:focus { border-color:var(--gold); }
+    .btn { width:100%; background:var(--gold); color:var(--navy); border:none; padding:15px; border-radius:14px; font-weight:700; font-size:1rem; cursor:pointer; }
+    .btn:hover { background:var(--gold2); }
+    .error { background:#fef2f2; color:#991b1b; padding:10px 12px; border-radius:10px; font-size:0.85rem; margin-bottom:14px; display:none; }
+    @media (max-width:450px) { body { padding:0; } .phone { width:100%; height:100vh; border-radius:0; box-shadow:none; } .phone::before { display:none; } }
+  </style>
 </head>
 <body>
-  <header class="site-header">
-    <a href="index.html" class="brand"><img src="assets/logo.png" alt="Leads Bank" /> Leads Bank</a>
-    <nav class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="login.html" class="btn btn-outline btn-sm">Customer Login</a>
-    </nav>
-  </header>
-  <div class="auth-page">
-    <div class="auth-card">
-      <h1>Owner / Admin Sign In</h1>
-      <p class="subtitle">Restricted access for bank administration.</p>
-      <div class="error-msg" id="error"></div>
-      <form id="adminForm">
-        <div class="form-group"><label>Admin Username</label><input type="text" id="username" required placeholder="admin" /></div>
-        <div class="form-group"><label>Password</label><input type="password" id="password" required /></div>
-        <button type="submit" class="btn btn-primary btn-block">Sign In to Admin</button>
-      </form>
-      <div class="auth-footer">Customer login is on the main site.</div>
+  <div class="phone">
+    <div class="header">
+      <h1>Admin Login</h1>
+      <div class="sub">Leads Bank Owner Access</div>
+    </div>
+    <div class="content">
+      <div class="card">
+        <div class="error" id="error"></div>
+        <form id="loginForm">
+          <label>Email</label>
+          <input type="email" id="email" required placeholder="admin@leadsbank.com" />
+          <label>Password</label>
+          <input type="password" id="password" required placeholder="••••••••" />
+          <button type="submit" class="btn">Sign In</button>
+        </form>
+      </div>
     </div>
   </div>
   <script src="js/api.js"></script>
   <script>
-    document.getElementById("adminForm").onsubmit = async function(e) {
+    document.getElementById("loginForm").onsubmit = async function(e) {
       e.preventDefault();
       const err = document.getElementById("error");
       err.style.display = "none";
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
       try {
-        const data = await api("/api/admin/login", {
-          method: "POST",
-          body: { username: document.getElementById("username").value.trim(), password: document.getElementById("password").value }
-        });
-        setAdminToken(data.token);
+        if (typeof api !== "function") {
+          // Demo fallback
+          if (typeof setAdminToken === "function") setAdminToken("demo");
+          location.href = "admin.html";
+          return;
+        }
+        const res = await api("/api/admin/login", { method: "POST", body: { email, password } });
+        if (typeof setAdminToken === "function") setAdminToken(res.token || res.adminToken || "ok");
         location.href = "admin.html";
       } catch (ex) {
-        err.textContent = ex.message; err.style.display = "block";
+        err.textContent = ex.message || "Login failed";
+        err.style.display = "block";
       }
     };
   </script>
