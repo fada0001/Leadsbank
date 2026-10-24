@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard — Leads Bank</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    :root { --navy:#071D3D; --navy2:#06244B; --gold:#FFC928; --gold2:#F4B900; --bg:#F7F8FC; --border:#E6E9F0; --muted:#687386; --pos:#36A853; --neg:#C62828; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Inter, system-ui, sans-serif; background: #eef1f7; color:#111827; }
+    .nav a { font-weight: 600; }
+    .app { display:flex; min-height:100vh; }
+    .side { width:260px; background:#fff; border-radius:0 32px 32px 0; box-shadow: 0 4px 24px rgba(7,29,61,0.06); padding:24px 16px; display:flex; flex-direction:column; position:sticky; top:0; height:100vh; }
+    .logo { display:flex; align-items:center; gap:10px; padding:0 8px 20px; }
+    .logo-mark { width:42px; height:42px; border-radius:50%; background:conic-gradient(#FFC928 0 50%, #071D3D 0 100%); display:flex; align-items:center; justify-content:center; }
+    .logo-mark span { width:22px; height:22px; border-radius:50%; background:#fff; }
+    .logo h2 { margin:0; font-size:0.95rem; letter-spacing:0.04em; color:var(--navy); }
+    .logo p { margin:2px 0 0; font-size:0.72rem; color:var(--muted); }
+    .nav a { display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:12px; color:#111827; text-decoration:none; font-size:0.92rem; font-weight:600; margin-bottom:2px; }
+    .ico { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.05rem; font-weight:700; }
+    .nav a.active { background:#EEF3FF; color:var(--navy); font-weight:600; }
+    .nav a:hover { background:#f4f6fb; }
+    .badge { margin-left:auto; background:var(--gold); color:var(--navy); font-size:0.7rem; font-weight:700; border-radius:999px; padding:2px 7px; }
+    .support-card { margin-top:auto; background:#f8fafc; border:1px solid var(--border); border-radius:16px; padding:16px; }
+    .support-card strong { display:block; margin:8px 0 2px; }
+    .support-card p { margin:0 0 12px; font-size:0.78rem; color:var(--muted); }
+    .main { flex:1; padding:28px 32px 40px; }
+    .top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:20px; }
+    .top h1 { margin:0; font-size:1.8rem; color:var(--navy); font-weight:800; }
+    .top .sub { margin:6px 0 0; color:var(--muted); font-size:0.95rem; }
+    .profile { display:flex; align-items:center; gap:10px; }
+    .avatar { width:40px; height:40px; border-radius:50%; background:#e0e7ff; display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--navy); }
+    .date-pill { margin-top:10px; background:#fff; border:1px solid var(--border); border-radius:12px; padding:8px 12px; font-size:0.82rem; color:var(--muted); display:inline-flex; align-items:center; gap:6px; }
+    .bal { background:linear-gradient(135deg,#06244B,#0a3268); border-radius:20px; padding:24px; color:#fff; position:relative; overflow:hidden; box-shadow:0 12px 30px rgba(6,36,75,0.18); margin-bottom:18px; }
+    .bal::after { content:"LB"; position:absolute; right:24px; top:24px; font-size:3rem; font-weight:800; opacity:0.08; }
+    .bal .label { font-size:0.85rem; opacity:0.85; }
+    .bal .amt { font-size:2.6rem; font-weight:800; letter-spacing:-0.03em; margin:6px 0; }
+    .bal .chg { color:#7dcea0; font-size:0.85rem; }
+    .bal-actions { display:flex; align-items:center; gap:18px; margin-top:18px; flex-wrap:wrap; }
+    .bal-actions a { color:#fff; text-decoration:none; font-size:0.85rem; font-weight:500; }
+    .gold { background:var(--gold); color:var(--navy) !important; padding:10px 16px; border-radius:12px; font-weight:700; }
+    .row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+    .card { background:#fff; border:1px solid var(--border); border-radius:18px; padding:18px; box-shadow:0 2px 8px rgba(7,29,61,0.04); }
+    .card h3 { margin:0; font-size:1rem; }
+    .card .head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    .card .head a { color:var(--gold2); font-size:0.82rem; font-weight:600; }
+    .stmt { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #f1f3f7; font-size:0.88rem; }
+    .stmt:last-child { border-bottom:none; }
+    .tx { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #f1f3f7; }
+    .tx:last-child { border-bottom:none; }
+    .ico { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.95rem; }
+    .ico.g { background:#E6F5EA; } .ico.b { background:#E7F0FF; } .ico.p { background:#F0E7FF; }
+    .tx .meta { font-size:0.75rem; color:var(--muted); }
+    .amt.pos { color:var(--pos); font-weight:600; } .amt.neg { color:var(--neg); font-weight:600; }
+    .quick { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+    .q { border:1px solid var(--border); border-radius:14px; padding:14px; text-align:center; text-decoration:none; color:inherit; }
+    .q .ico { margin:0 auto 8px; background:#FFF6D6; }
+    .q strong { display:block; font-size:0.88rem; }
+    .q span { font-size:0.75rem; color:var(--muted); }
+    .sec { background:#F4F7FF; border:1px solid #E3E8F5; border-radius:16px; padding:14px 16px; display:flex; justify-content:space-between; align-items:center; margin-top:16px; }
+    .sec a { color:var(--gold2); font-weight:600; }
+    .view { display:none; } .view.on { display:block; }
+    .mnav { display:none; }
+    @media (max-width:900px) {
+      .side { display:flex; position:fixed; left:0; top:0; z-index:36; height:100vh; transform:translateX(-110%); transition:transform 0.28s ease; width:260px; }
+      .side.open { transform:translateX(0); }
+      #ham { display:block; }
+      .main { padding:16px; padding-top:60px; }
+      .row { grid-template-columns:1fr; }
+      .quick { grid-template-columns:1fr 1fr; }
+      .top { flex-direction:column; }
+      .bal .amt { font-size:2rem; }
+      .mnav { display:flex; position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid var(--border); justify-content:space-around; padding:10px 0 18px; z-index:20; }
+      .mnav a { text-align:center; font-size:0.68rem; color:var(--muted); text-decoration:none; padding:6px; }
+      .app { padding-bottom:70px; }
+    }
+  </style>
+</head>
+<body>
+  <button id="ham" style="display:none;position:fixed;top:14px;left:14px;z-index:40;width:40px;height:40px;border-radius:10px;border:1px solid #e5e7eb;background:#fff;font-size:1.2rem;cursor:pointer">☰</button>
+  <div id="sideOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:35"></div>
+  <div class="app">
+    <aside class="side">
+      <div class="logo">
+        <img src="assets/logo.png" alt="Leads Bank" style="width:42px;height:42px;border-radius:10px" />
+        <div><h2>LEADS BANK</h2><p>Lead Your Tomorrow</p></div>
+      </div>
+      <nav class="nav" id="sideNav">
+        <a href="#" data-v="dash" class="active">🏠 Dashboard</a>
+        <a href="#" data-v="accounts">📄 Accounts</a>
+        <a href="#" data-v="transfers">⇄ Transfers</a>
+        <a href="#" data-v="payments">👥 Payments</a>
+        <a href="#" data-v="cards">💳 Cards</a>
+        <a href="#" data-v="loans">👤 Loans</a>
+        <a href="#" data-v="invest">📈 Investments</a>
+        <a href="#" data-v="messages">✉️ Messages <span class="badge" id="msgBadge">2</span></a>
+        <a href="#" data-v="settings">⚙️ Settings</a>
+      </nav>
+      <div class="support-card">
+        <div style="font-size:1.2rem">🎧</div>
+        <strong>Need Help?</strong>
+        <p>Contact our support team</p>
+        <a href="support.html" class="btn" style="background:var(--gold);color:var(--navy);display:inline-block;padding:8px 14px;border-radius:10px;font-weight:700;text-decoration:none">Contact Support</a>
+      </div>
+    </aside>
+    <main class="main">
+      <div id="view-dash" class="view on">
+        <div class="top">
+          <div>
+            <h1 id="greet">Good morning,</h1>
+            <div class="sub">Here’s what’s happening with your account today.</div>
+          </div>
+          <div>
+            <div class="profile" id="profileBtn" style="cursor:pointer">
+              <div style="font-size:1.1rem" id="bellBtn">🔔</div>
+              <div class="avatar" id="av">C</div>
+              <div><strong id="uname">Customer</strong><div class="sub" style="font-size:0.78rem">Personal Checking ▾</div></div>
+            </div>
+            <div id="profileMenu" style="display:none;position:absolute;right:16px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:8px 0;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,0.08);z-index:30">
+              <a href="profile.html" style="display:block;padding:10px 14px;color:#111;text-decoration:none">Profile</a>
+              <a href="#" data-v="settings" style="display:block;padding:10px 14px;color:#111;text-decoration:none">Settings</a>
+              <a href="#" id="signOut2" style="display:block;padding:10px 14px;color:#C62828;text-decoration:none">Sign out</a>
+            </div>
+            <div id="notifPanel" style="display:none;position:absolute;right:16px;top:70px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;width:260px;box-shadow:0 8px 24px rgba(0,0,0,0.08);z-index:30">
+              <strong>Notifications</strong>
+              <div id="notifList" class="meta" style="margin-top:8px">Loading…</div>
+            </div>
+            <div class="date-pill" id="dateBtn" style="cursor:pointer">📅 <span id="dateLabel">Select range</span> ▾</div>
+            <div id="datePop" style="display:none;position:absolute;right:16px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,0.08);z-index:30">
+              <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+                <input type="date" id="dFrom" style="padding:6px;border:1px solid var(--border);border-radius:8px" />
+                <input type="date" id="dTo" style="padding:6px;border:1px solid var(--border);border-radius:8px" />
+              </div>
+              <button id="applyDate" style="background:var(--gold);color:var(--navy);border:none;padding:6px 12px;border-radius:8px;font-weight:600;cursor:pointer">Apply</button>
+            </div>
+          </div>
+        </div>
+        <div class="bal">
+          <div class="label">Total Balance <button id="eyeBtn" style="background:none;border:none;color:#fff;cursor:pointer;font-size:1rem" aria-label="Toggle balance">👁</button></div>
+          <div class="amt" id="bal">$0.00</div>
+          <div class="chg">↑ 4.35% vs last month</div>
+          <div class="bal-actions">
+            <a href="#" data-v="payments">＋ Add Money</a>
+            <a href="#" data-v="transfers">↗ Transfer</a>
+            <a href="#" data-v="accounts">↓ Download Statement</a>
+            <a href="#" data-v="accounts" class="gold">View All Accounts</a>
+          </div>
+        </div>
+        <div class="row">
+          <div class="card">
+            <div class="head"><h3>📄 Statements</h3><a href="#" data-v="accounts">View all</a></div>
+            <div class="stmt"><div><strong>April 2024</strong><div class="meta">Apr 30, 2024</div></div><div>↓</div></div>
+            <div class="stmt"><div><strong>March 2024</strong><div class="meta">Mar 31, 2024</div></div><div>↓</div></div>
+            <div class="stmt"><div><strong>February 2024</strong><div class="meta">Feb 29, 2024</div></div><div>↓</div></div>
+          </div>
+          <div class="card">
+            <div class="head"><h3>📈 Account Activity</h3><a href="#" data-v="accounts">View all</a></div>
+            <div id="act"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="head"><h3>⚡ Quick Actions</h3></div>
+          <div class="quick">
+            <a class="q" href="#" data-v="transfers"><div class="ico">⇄</div><strong>Transfer Money</strong><span>Send to any bank</span></a>
+            <a class="q" href="#" data-v="payments"><div class="ico">👥</div><strong>Pay Bills</strong><span>Pay your bills instantly</span></a>
+            <a class="q" href="#" data-v="transfers"><div class="ico">💳</div><strong>Add Beneficiary</strong><span>Manage payees</span></a>
+            <a class="q" href="#" data-v="cards"><div class="ico">📈</div><strong>Card Controls</strong><span>Manage your card</span></a>
+          </div>
+        </div>
+        <div class="sec">
+          <div>🛡️ <strong>Your security is our priority</strong><div class="meta">We use advanced encryption to keep your data safe.</div></div>
+          <a href="#" data-v="settings">Learn more ›</a>
+        </div>
+      </div>
+
+      <div id="view-accounts" class="view">
+        <h1>Accounts</h1>
+        <div class="card">
+          <h3>Personal Checking</h3>
+          <p>Account · <span id="acctId">—</span></p>
+          <p>Balance: <strong id="bal2">$0.00</strong></p>
+          <p>Available: <strong id="avail2">$0.00</strong></p>
+          <a class="gold" href="statements.html" style="display:inline-block;margin-top:12px;padding:10px 16px;border-radius:10px;text-decoration:none">View Statements</a>
+        </div>
+      </div>
+      <div id="view-transfers" class="view">
+        <h1>Transfers</h1>
+        <div class="card">
+          <p>Send money to another account. Requests are reviewed by admin.</p>
+          <a class="gold" href="transfers.html" style="display:inline-block;margin-top:12px;padding:10px 16px;border-radius:10px;text-decoration:none">New Transfer</a>
+          <div id="xferList" style="margin-top:16px"></div>
+        </div>
+      </div>
+      <div id="view-payments" class="view">
+        <h1>Payments</h1>
+        <div class="card">
+          <p>Add funds or pay bills. Requests go to admin for approval.</p>
+          <a class="gold" href="add-funds.html" style="display:inline-block;margin-top:12px;padding:10px 16px;border-radius:10px;text-decoration:none">Add Funds</a>
+          <div id="payList" style="margin-top:16px"></div>
+        </div>
+      </div>
+      <div id="view-cards" class="view">
+        <h1>Cards</h1>
+        <div class="card">
+          <p><strong>Debit Card</strong> · •••• <span id="cardLast">0000</span></p>
+          <p>Status: <span id="cardStatus">Active</span></p>
+          <div style="margin:12px 0">
+            <label style="font-size:0.85rem">Spending limit</label>
+            <input type="number" id="spendLimit" value="500" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;margin-top:4px" />
+          </div>
+          <label style="display:block;margin:8px 0"><input type="checkbox" id="onlineTx" checked /> Online transactions</label>
+          <label style="display:block;margin:8px 0"><input type="checkbox" id="intlTx" /> International transactions</label>
+          <button class="btn" id="lockBtn" style="margin-top:12px;background:var(--navy);color:#fff;border:none;padding:8px 14px;border-radius:8px;cursor:pointer">Lock card</button>
+          <button id="saveCard" style="margin-left:8px;background:var(--gold);color:var(--navy);border:none;padding:8px 14px;border-radius:8px;font-weight:600;cursor:pointer">Save controls</button>
+        </div>
+      </div>
+      <div id="view-loans" class="view">
+        <h1>Loans</h1>
+        <div class="card">
+          <p><strong>Personal Loan</strong> (illustrative)</p>
+          <p>Principal: $5,000 · Rate: 8.5% · Remaining: $3,200</p>
+          <p class="meta">Next payment: $180 on the 15th</p>
+        </div>
+      </div>
+      <div id="view-invest" class="view">
+        <h1>Investments</h1>
+        <div class="card">
+          <p><strong>Sample portfolio</strong></p>
+          <p>Cash 60% · Bonds 25% · Stocks 15%</p>
+          <div style="height:8px;background:#eee;border-radius:4px;margin:10px 0;overflow:hidden"><div style="width:60%;height:100%;background:#36A853"></div></div>
+          <p class="meta">Illustrative only. No live trading.</p>
+        </div>
+      </div>
+      <div id="view-transfers" class="view">
+        <h1>Transfers</h1>
+        <div class="card">
+          <h3 style="margin-bottom:10px">Add Beneficiary</h3>
+          <form id="beneForm">
+            <input id="beneName" placeholder="Name" required style="width:100%;padding:8px;margin-bottom:8px;border:1px solid var(--border);border-radius:8px" />
+            <input id="beneBank" placeholder="Bank name" style="width:100%;padding:8px;margin-bottom:8px;border:1px solid var(--border);border-radius:8px" />
+            <input id="beneAcct" placeholder="Account (masked)" style="width:100%;padding:8px;margin-bottom:8px;border:1px solid var(--border);border-radius:8px" />
+            <button type="submit" style="background:var(--gold);color:var(--navy);border:none;padding:8px 14px;border-radius:8px;font-weight:600;cursor:pointer">Save</button>
+          </form>
+          <div id="beneList" style="margin-top:12px"></div>
+          <a class="gold" href="transfers.html" style="display:inline-block;margin-top:12px;padding:10px 16px;border-radius:10px;text-decoration:none">Go to Transfers</a>
+          <div id="xferList" style="margin-top:16px"></div>
+        </div>
+      </div>
+      <div id="view-payments" class="view">
+        <h1>Payments</h1>
+        <div class="card">
+          <h3>Sample billers</h3>
+          <div class="stmt"><div><strong>Electric Co</strong><div class="meta">Due May 20 · $85.00</div></div><button class="payBill" data-name="Electric Co" data-amt="85" style="background:var(--gold);border:none;padding:6px 10px;border-radius:8px;font-weight:600;cursor:pointer">Pay</button></div>
+          <div class="stmt"><div><strong>Internet</strong><div class="meta">Due May 22 · $60.00</div></div><button class="payBill" data-name="Internet" data-amt="60" style="background:var(--gold);border:none;padding:6px 10px;border-radius:8px;font-weight:600;cursor:pointer">Pay</button></div>
+          <a class="gold" href="add-funds.html" style="display:inline-block;margin-top:12px;padding:10px 16px;border-radius:10px;text-decoration:none">Add Funds</a>
+          <div id="payList" style="margin-top:16px"></div>
+        </div>
+      </div>
+      <div id="view-messages" class="view">
+        <h1>Messages</h1>
+        <div class="card">
+          <p>Contact support or view replies.</p>
+          <a class="gold" href="support.html" style="display:inline-block;margin-top:12px;padding:10px 16px;border-radius:10px;text-decoration:none">Open Support</a>
+          <div id="msgList" style="margin-top:16px"></div>
+        </div>
+      </div>
+      <div id="view-settings" class="view">
+        <h1>Settings</h1>
+        <div class="card">
+          <p>Update your profile, password, and preferences.</p>
+          <a class="gold" href="profile.html" style="display:inline-block;margin-top:12px;padding:10px 16px;border-radius:10px;text-decoration:none">Edit Profile</a>
+          <a href="login.html" id="signOut" style="display:inline-block;margin-left:8px;color:var(--neg);font-weight:600">Sign Out</a>
+        </div>
+      </div>
+    </main>
+  </div>
+  <nav class="mnav">
+    <a href="#" data-v="dash">🏠<br>Home</a>
+    <a href="#" data-v="accounts">📄<br>Accounts</a>
+    <a href="#" data-v="transfers">⇄<br>Transfer</a>
+    <a href="#" data-v="messages">✉️<br>Support</a>
+    <a href="#" data-v="settings">⚙️<br>Settings</a>
+  </nav>
+  <script src="js/api.js"></script>
+  <script>
+    if (!requireCustomerPage()) throw 0;
+    let realBal = "$0.00", hidden = false;
+    function show(v) {
+      document.querySelectorAll(".view").forEach(el => el.classList.remove("on"));
+      const t = document.getElementById("view-" + v);
+      if (t) t.classList.add("on");
+      document.querySelectorAll("[data-v]").forEach(a => a.classList.toggle("active", a.dataset.v === v));
+    }
+    document.getElementById("ham").onclick = function() {
+      document.querySelector(".side").classList.add("open");
+      document.getElementById("sideOverlay").style.display = "block";
+    };
+    document.getElementById("sideOverlay").onclick = function() {
+      document.querySelector(".side").classList.remove("open");
+      this.style.display = "none";
+    };
+    document.querySelectorAll("[data-v]").forEach(a => a.onclick = e => {
+      e.preventDefault();
+      show(a.dataset.v);
+      if (window.innerWidth <= 900) {
+        document.querySelector(".side").classList.remove("open");
+        document.getElementById("sideOverlay").style.display = "none";
+      }
+    });
+    (async function() {
+      try {
+        const { user } = await api("/api/me", { auth: "customer" });
+        const { transactions } = await api("/api/me/transactions", { auth: "customer" });
+        document.getElementById("greet").textContent = "Good morning, " + user.firstName + ",";
+        document.getElementById("uname").textContent = user.firstName + " " + user.lastName;
+        document.getElementById("av").textContent = (user.firstName[0] + user.lastName[0]).toUpperCase();
+        document.getElementById("bal").textContent = formatMoney(user.balance);
+        realBal = formatMoney(user.balance);
+        document.getElementById("bal2").textContent = formatMoney(user.balance);
+        document.getElementById("acctId").textContent = user.id;
+        const last4 = (user.accountNumber || user.id || "").toString().slice(-4);
+        document.getElementById("cardLast").textContent = last4;
+        document.getElementById("avail2").textContent = formatMoney(user.available);
+
+        const reqs = await api("/api/me/requests", { auth: "customer" });
+        const xfer = document.getElementById("xferList");
+        const pay = document.getElementById("payList");
+        const transfers = (reqs.requests || []).filter(r => r.type !== "add_funds");
+        const payments = (reqs.requests || []).filter(r => r.type === "add_funds");
+        xfer.innerHTML = transfers.length ? transfers.map(r => `<div class="stmt"><div>${r.details}<div class="meta">${r.date}</div></div><div>${r.status}</div></div>`).join("") : '<p class="meta">No transfers yet.</p>';
+        pay.innerHTML = payments.length ? payments.map(r => `<div class="stmt"><div>${r.details || "Add funds"}<div class="meta">${r.date}</div></div><div>${formatMoney(r.amount)} · ${r.status}</div></div>`).join("") : '<p class="meta">No payment requests yet.</p>';
+
+        const msgs = await api("/api/me/messages", { auth: "customer" });
+        const mb = document.getElementById("msgList");
+        mb.innerHTML = (msgs.messages || []).length ? msgs.messages.slice(-5).map(m => `<div class="stmt"><div><strong>${m.from === "admin" ? "Bank" : "You"}</strong><div class="meta">${m.date}</div></div><div>${(m.body||"").slice(0,40)}</div></div>`).join("") : '<p class="meta">No messages yet.</p>';
+        const act = document.getElementById("act");
+        const txs = (transactions || []).slice().reverse().slice(0, 3);
+        if (!txs.length) act.innerHTML = '<div class="tx"><div>No activity yet</div></div>';
+        else act.innerHTML = txs.map(tx => {
+          const pos = tx.type === "credit";
+          return `<div class="tx"><div class="ico ${pos?"g":"b"}">${pos?"↓":"↑"}</div><div><strong>${tx.desc}</strong><div class="meta">${tx.date}</div></div><div class="amt ${pos?"pos":"neg"}" style="margin-left:auto">${pos?"+":"−"}${formatMoney(Math.abs(tx.amount))}</div></div>`;
+        }).join("");
+      } catch (e) { location.href = "login.html"; }
+    })();
+    document.getElementById("saveCard").onclick = function() {
+      toast("Card controls saved");
+    };
+    document.getElementById("beneForm").onsubmit = function(e) {
+      e.preventDefault();
+      const name = document.getElementById("beneName").value.trim();
+      if (!name) return;
+      const list = JSON.parse(localStorage.getItem("bene") || "[]");
+      list.push({ name, bank: document.getElementById("beneBank").value, acct: document.getElementById("beneAcct").value });
+      localStorage.setItem("bene", JSON.stringify(list));
+      renderBene();
+      this.reset();
+      toast("Beneficiary added");
+    };
+    function renderBene() {
+      const list = JSON.parse(localStorage.getItem("bene") || "[]");
+      document.getElementById("beneList").innerHTML = list.length
+        ? list.map(b => `<div class="stmt"><div><strong>${b.name}</strong><div class="meta">${b.bank || ""} ${b.acct || ""}</div></div></div>`).join("")
+        : "<p class='meta'>No beneficiaries yet</p>";
+    }
+    renderBene();
+    document.querySelectorAll(".payBill").forEach(btn => {
+      btn.onclick = function() {
+        toast("Bill payment of $" + this.dataset.amt + " to " + this.dataset.name + " submitted (simulated)");
+      };
+    });
+    document.querySelectorAll(".stmt").forEach((row, i) => {
+      if (row.querySelector("strong") && row.textContent.includes("2024")) {
+        row.style.cursor = "pointer";
+        row.onclick = function() {
+          const blob = new Blob(["SAMPLE STATEMENT\nDate,Description,Amount\n2024-04-30,Sample,-0.00\n"], { type: "text/csv" });
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "sample-statement.csv";
+          a.click();
+          toast("Sample statement downloaded");
+        };
+      }
+    });
+      const s = document.getElementById("cardStatus");
+      if (s.textContent === "Active") { s.textContent = "Locked"; this.textContent = "Unlock card"; toast("Card locked"); }
+      else { s.textContent = "Active"; this.textContent = "Lock card"; toast("Card unlocked"); }
+    };
+    document.getElementById("signOut").onclick = function(e) {
+      e.preventDefault(); setToken(""); location.href = "login.html";
+    };
+    let balHidden = false;
+    document.getElementById("eyeBtn").onclick = function() {
+      balHidden = !balHidden;
+      document.getElementById("bal").textContent = balHidden ? "$••,•••.••" : realBal;
+      this.textContent = balHidden ? "🙈" : "👁";
+    };
+    document.getElementById("dateBtn").onclick = function() {
+      const p = document.getElementById("datePop");
+      p.style.display = p.style.display === "none" ? "block" : "none";
+    };
+    document.getElementById("applyDate").onclick = function() {
+      const f = document.getElementById("dFrom").value;
+      const t = document.getElementById("dTo").value;
+      if (f && t) { document.getElementById("dateLabel").textContent = f + " – " + t; toast("Range updated"); }
+      document.getElementById("datePop").style.display = "none";
+    };
+    document.getElementById("profileBtn").onclick = function(e) {
+      if (e.target.id === "bellBtn") return;
+      const m = document.getElementById("profileMenu");
+      m.style.display = m.style.display === "none" ? "block" : "none";
+    };
+    document.getElementById("bellBtn").onclick = async function(e) {
+      e.stopPropagation();
+      const p = document.getElementById("notifPanel");
+      p.style.display = p.style.display === "none" ? "block" : "none";
+      if (p.style.display === "block") {
+        try {
+          const r = await api("/api/me/notifications", { auth: "customer" });
+          const list = r.notifications || [];
+          document.getElementById("notifList").innerHTML = list.length
+            ? list.slice(0, 5).map(n => `<div style="padding:6px 0;border-bottom:1px solid #f1f3f7"><strong>${n.title}</strong><div>${n.body}</div></div>`).join("")
+            : "No notifications";
+        } catch { document.getElementById("notifList").textContent = "Could not load"; }
+      }
+    };
+    document.getElementById("signOut2").onclick = function(e) { e.preventDefault(); setToken(""); location.href = "login.html"; };
+    function toast(msg) {
+      let t = document.getElementById("toast");
+      if (!t) { t = document.createElement("div"); t.id = "toast"; t.style.cssText = "position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#071D3D;color:#fff;padding:10px 16px;border-radius:10px;z-index:50;font-size:0.85rem"; document.body.appendChild(t); }
+      t.textContent = msg; t.style.display = "block";
+      setTimeout(() => t.style.display = "none", 2200);
+    }
+  </script>
+</body>
+</html>
