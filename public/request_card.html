@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Request Physical Debit Card — Leads Bank</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --navy:#071D3D; --navy2:#06244B; --gold:#FFC928; --gold2:#F4B900; --bg:#F4F6FB; --border:#E6E9F0; --muted:#687386; --pos:#36A853; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Inter, system-ui, sans-serif; background:linear-gradient(180deg,#e8edf5 0%,#f4f6fb 100%); color:#111827; min-height:100vh; }
+    .wrap { max-width:480px; margin:0 auto; padding:32px 20px 60px; }
+    .back { display:inline-flex; align-items:center; gap:6px; color:#fff; background:var(--navy); text-decoration:none; font-size:0.88rem; font-weight:600; margin-bottom:20px; padding:8px 14px; border-radius:10px; }
+    .back:hover { color:var(--navy); }
+    .card { background:#fff; border-radius:24px; padding:32px 28px; box-shadow:0 8px 32px rgba(7,29,61,0.08); border:1px solid var(--border); }
+    .icon { width:56px; height:56px; border-radius:16px; background:linear-gradient(135deg,var(--navy),var(--navy2)); display:flex; align-items:center; justify-content:center; font-size:1.6rem; margin-bottom:16px; }
+    h1 { margin:0 0 8px; font-size:1.55rem; font-weight:800; color:var(--navy); letter-spacing:-0.02em; }
+    .sub { margin:0 0 28px; color:var(--muted); font-size:0.95rem; line-height:1.5; }
+    label { display:block; font-size:0.82rem; font-weight:600; color:#374151; margin-bottom:6px; }
+    input, select { width:100%; padding:13px 14px; border:1.5px solid var(--border); border-radius:12px; font-size:0.95rem; font-family:inherit; outline:none; transition:border 0.15s; background:#fff; }
+    input:focus, select:focus { border-color:var(--gold); }
+    .field { margin-bottom:16px; }
+    .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .btn { width:100%; background:var(--gold); color:var(--navy); border:none; padding:15px; border-radius:14px; font-weight:700; font-size:1rem; cursor:pointer; margin-top:8px; transition:background 0.15s; }
+    .btn:hover { background:var(--gold2); }
+    .btn:disabled { opacity:0.6; cursor:not-allowed; }
+    .success { display:none; text-align:center; padding:20px 0; }
+    .success.on { display:block; }
+    .check { width:72px; height:72px; border-radius:50%; background:#E6F5EA; display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 20px; }
+    .success h2 { margin:0 0 10px; font-size:1.45rem; color:var(--navy); font-weight:800; }
+    .success p { margin:0 0 8px; color:var(--muted); font-size:0.95rem; line-height:1.5; }
+    .eta { background:#F4F7FF; border-radius:12px; padding:14px; margin:20px 0; font-size:0.88rem; color:var(--navy); font-weight:600; }
+    .form { }
+    .form.hide { display:none; }
+    @media (max-width:480px) { .wrap { padding:20px 16px 40px; } .card { padding:24px 20px; } .row { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a href="dashboard_mobile.html" class="back">← Back to Cards</a>
+    <div class="card">
+      <div class="form" id="formView">
+        <div class="icon">💳</div>
+        <h1>Request a Physical Debit Card</h1>
+        <p class="sub">We’ll mail a physical card to the address you provide. Delivery usually takes 5–7 business days.</p>
+        <form id="cardForm">
+          <div class="field">
+            <label>Full name on card</label>
+            <input id="fullName" required placeholder="As it should appear on the card" />
+          </div>
+          <div class="field">
+            <label>Street address</label>
+            <input id="street" required placeholder="123 Main Street" />
+          </div>
+          <div class="field">
+            <label>Apartment / Suite (optional)</label>
+            <input id="apt" placeholder="Apt 4B" />
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>City</label>
+              <input id="city" required placeholder="City" />
+            </div>
+            <div class="field">
+              <label>State</label>
+              <input id="state" required placeholder="State" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>ZIP / Postal code</label>
+              <input id="zip" required placeholder="12345" />
+            </div>
+            <div class="field">
+              <label>Country</label>
+              <select id="country" required>
+                <option value="United States">United States</option>
+                <option value="Nigeria">Nigeria</option>
+                <option value="Canada">Canada</option>
+                <option value="United Kingdom">United Kingdom</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn" id="submitBtn">Request Physical Card</button>
+        </form>
+      </div>
+      <div class="success" id="successView">
+        <div class="check">✓</div>
+        <h2>Your physical debit card is on the way</h2>
+        <p>We’ve received your request and will mail your card to the address you provided.</p>
+        <div class="eta">Estimated delivery: 5–7 business days</div>
+        <p style="font-size:0.85rem">You’ll receive a notification once it ships. Keep an eye on your Messages for updates.</p>
+        <a href="dashboard_mobile.html" class="btn" style="display:inline-block;text-decoration:none;margin-top:12px">Back to Dashboard</a>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.getElementById("cardForm").onsubmit = function(e) {
+      e.preventDefault();
+      const btn = document.getElementById("submitBtn");
+      btn.disabled = true;
+      btn.textContent = "Submitting…";
+      setTimeout(() => {
+        document.getElementById("formView").classList.add("hide");
+        document.getElementById("successView").classList.add("on");
+      }, 600);
+    };
+  </script>
+</body>
+</html>
