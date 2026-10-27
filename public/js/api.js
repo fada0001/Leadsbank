@@ -1,37 +1,72 @@
-function tokenKey(auth) {
-  return auth === "admin" ? "leads_admin_token" : "leads_customer_token";
+const API = "";
+
+function getToken() {
+  return localStorage.getItem("lb_token") || localStorage.getItem("leads_customer_token") || "";
+}
+function setToken(t) {
+  if (t) {
+    localStorage.setItem("lb_token", t);
+    localStorage.setItem("leads_customer_token", t);
+  } else {
+    localStorage.removeItem("lb_token");
+    localStorage.removeItem("leads_customer_token");
+  }
+}
+function getAdminToken() {
+  return localStorage.getItem("lb_admin_token") || localStorage.getItem("leads_admin_token") || "";
+}
+function setAdminToken(t) {
+  if (t) {
+    localStorage.setItem("lb_admin_token", t);
+    localStorage.setItem("leads_admin_token", t);
+  } else {
+    localStorage.removeItem("lb_admin_token");
+    localStorage.removeItem("leads_admin_token");
+  }
 }
 
-async function api(path, opts) {
-  opts = opts || {};
-  const headers = { "Content-Type": "application/json" };
-  if (opts.auth) {
-    const token = localStorage.getItem(tokenKey(opts.auth));
+async function api(path, options) {
+  options = options || {};
+  const headers = Object.assign({ "Content-Type": "application/json" }, options.headers || {});
+  if (options.auth === "customer") {
+    const token = getToken();
     if (!token) {
-      if (opts.auth === "admin") location.href = "admin-login.html";
-      else location.href = "/login";
+      location.href = "login.html";
       throw new Error("Unauthorized");
     }
     headers.Authorization = "Bearer " + token;
   }
-  const res = await fetch(path, {
-    method: opts.method || "GET",
+  if (options.auth === "admin") {
+    const token = getAdminToken();
+    if (!token) {
+      location.href = "admin-login.html";
+      throw new Error("Unauthorized");
+    }
+    headers.Authorization = "Bearer " + token;
+  }
+  const res = await fetch(API + path, {
+    method: options.method || "GET",
     headers: headers,
-    body: opts.body ? JSON.stringify(opts.body) : undefined,
+    body: options.body ? JSON.stringify(options.body) : undefined,
   });
-  let data = {};
-  try {
-    data = await res.json();
-  } catch (e) {}
+  const data = await res.json().catch(function () { return {}; });
   if (res.status === 401) {
-    localStorage.removeItem(tokenKey(opts.auth || "customer"));
-    if (opts.auth === "admin") location.href = "admin-login.html";
-    else location.href = "/login";
+    if (options.auth === "admin") setAdminToken("");
+    else if (options.auth === "customer") setToken("");
   }
   if (!res.ok) throw new Error(data.error || "Request failed");
   return data;
 }
 
 function formatMoney(n) {
-  return Number(n || 0).toLocaleString("en-US", { style: "currency", currency: "USD" });
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n || 0);
+}
+
+function requireCustomerPage() {
+  if (!getToken()) { location.href = "login.html"; return false; }
+  return true;
+}
+function requireAdminPage() {
+  if (!getAdminToken()) { location.href = "admin-login.html"; return false; }
+  return true;
 }
