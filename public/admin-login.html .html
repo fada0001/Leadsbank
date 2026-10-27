@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin sign in — Leads Bank</title>
+  <style>
+    body { margin:0; font-family: Inter, system-ui, sans-serif; background:#071D3D; color:#111; min-height:100vh; display:flex; align-items:center; justify-content:center; }
+    form { width:min(420px, 92vw); background:#fff; border-radius:20px; padding:24px; }
+    h1 { margin:0 0 8px; color:#071D3D; }
+    label { display:block; font-size:14px; font-weight:600; margin-top:12px; }
+    input { width:100%; margin-top:4px; padding:12px; border:1px solid #E6E9F0; border-radius:12px; }
+    button { margin-top:16px; width:100%; background:#FFC928; color:#071D3D; border:0; border-radius:12px; padding:12px; font-weight:800; }
+    p { color:#687386; font-size:14px; }
+  </style>
+</head>
+<body>
+  <form id="form">
+    <h1>Admin sign in</h1>
+    <p>Owner dashboard</p>
+    <label>Username<input id="username" autocomplete="username" required /></label>
+    <label>Password<input id="password" type="password" autocomplete="current-password" required /></label>
+    <button type="submit">Sign in</button>
+    <p id="err"></p>
+  </form>
+  <script>
+    document.getElementById("form").onsubmit = async function (e) {
+      e.preventDefault();
+      const err = document.getElementById("err");
+      err.textContent = "";
+      try {
+        const res = await fetch("/api/admin/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: document.getElementById("username").value.trim(),
+            password: document.getElementById("password").value,
+          }),
+        });
+        const data = await res.json().catch(function () { return {}; });
+        if (!res.ok) throw new Error(data.error || "Login failed");
+        localStorage.setItem("leads_admin_token", data.token);
+        location.href = "admin.html";
+      } catch (ex) {
+        err.textContent = ex.message;
+      }
+    };
+  </script>
+</body>
+</html>

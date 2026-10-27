@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Messages — Leads Bank Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --navy:#071D3D; --gold:#FFC928; --bg:#F7F8FC; --border:#E8ECF2; --muted:#6B7280; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Inter, system-ui, sans-serif; background:#0f1117; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px 20px; }
+    .phone { width:390px; height:844px; background:#fff; border-radius:40px; overflow:hidden; position:relative; box-shadow:0 0 0 10px #1c1c1e, 0 0 0 12px #3a3a3c, 0 40px 80px rgba(0,0,0,0.45); display:flex; flex-direction:column; }
+    .phone::before { content:""; position:absolute; top:10px; left:50%; transform:translateX(-50%); width:110px; height:26px; background:#1c1c1e; border-radius:0 0 14px 14px; z-index:50; }
+    .header { background:linear-gradient(160deg,#071D3D 0%,#0d3a6e 100%); color:#fff; padding:52px 22px 20px; position:relative; }
+    .header h1 { margin:0; font-size:1.25rem; font-weight:700; }
+    .back { position:absolute; top:52px; left:16px; color:#fff; text-decoration:none; font-size:1.1rem; }
+    .content { flex:1; overflow-y:auto; padding:18px 16px 88px; background:var(--bg); }
+    .card, .item { background:#fff; border:1px solid var(--border); border-radius:16px; padding:14px; margin-bottom:12px; }
+    label { display:block; font-size:0.75rem; font-weight:700; margin-top:8px; }
+    input, textarea { width:100%; margin-top:4px; padding:10px; border:1px solid var(--border); border-radius:10px; font:inherit; }
+    button { margin-top:10px; background:var(--gold); color:var(--navy); border:0; border-radius:12px; padding:11px 14px; font-weight:800; }
+    .meta { color:var(--muted); font-size:0.75rem; }
+    .nav { position:absolute; bottom:0; left:0; right:0; background:#fff; border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:40; }
+    .nav a { text-align:center; font-size:0.6rem; color:var(--muted); text-decoration:none; }
+    .nav a.active { color:var(--navy); font-weight:700; }
+    @media (max-width:450px) { body { padding:0; } .phone { width:100%; height:100vh; border-radius:0; box-shadow:none; } .phone::before { display:none; } }
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div class="header"><a href="admin.html" class="back">←</a><h1 style="padding-left:28px">Messages</h1></div>
+    <div class="content">
+      <form id="reply" class="card">
+        <strong>Reply to customer</strong>
+        <label>Email<input id="email" type="email" required /></label>
+        <label>Reply<textarea id="body" rows="3" required></textarea></label>
+        <button type="submit">Send reply</button>
+      </form>
+      <div id="list"></div>
+    </div>
+    <nav class="nav">
+      <a href="admin.html">📊<br>Home</a>
+      <a href="admin-customers.html">👥<br>Customers</a>
+      <a href="admin-approvals.html">✓<br>Approvals</a>
+      <a href="admin-messages.html" class="active">✉️<br>Messages</a>
+      <a href="admin-notifications.html">🔔<br>Notify</a>
+    </nav>
+  </div>
+  <script src="js/api.js"></script>
+  <script>
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"]/g, function (c) {
+        if (c === "&") return "&" + "amp;";
+        if (c === "<") return "&" + "lt;";
+        if (c === ">") return "&" + "gt;";
+        return "&" + "quot;";
+      });
+    }
+    async function load() {
+      const { messages } = await api("/api/admin/messages", { auth: "admin" });
+      const list = document.getElementById("list");
+      const rows = messages || [];
+      list.innerHTML = rows.length ? rows.map(m => {
+        const who = (m.from_role || m.from) === "admin" ? "Bank" : (m.user_name || m.userName || "Customer");
+        return `<article class="item"><strong>${esc(who)}</strong><div class="meta">${esc(m.email)} · ${esc(m.date || "")}</div><p>${esc(m.subject ? m.subject + ": " : "")}${esc(m.body)}</p><button type="button" data-email="${esc(m.email)}">Reply</button></article>`;
+      }).join("") : '<p class="meta">No messages yet</p>';
+      list.querySelectorAll("button[data-email]").forEach(btn => {
+        btn.onclick = () => { document.getElementById("email").value = btn.dataset.email; document.getElementById("body").focus(); };
+      });
+    }
+    document.getElementById("reply").onsubmit = async (e) => {
+      e.preventDefault();
+      try {
+        await api("/api/admin/messages", { auth: "admin", method: "POST", body: { email: document.getElementById("email").value.trim(), subject: "Reply from Leads Bank", body: document.getElementById("body").value.trim() } });
+        document.getElementById("body").value = "";
+        load();
+      } catch (ex) { alert(ex.message || "Could not send"); }
+    };
+    load().catch(() => {});
+  </script>
+</body>
+</html>

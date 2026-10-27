@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Notifications — Leads Bank Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --navy:#071D3D; --gold:#FFC928; --bg:#F7F8FC; --border:#E8ECF2; --muted:#6B7280; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Inter, system-ui, sans-serif; background:#0f1117; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px 20px; }
+    .phone { width:390px; height:844px; background:#fff; border-radius:40px; overflow:hidden; position:relative; box-shadow:0 0 0 10px #1c1c1e, 0 0 0 12px #3a3a3c, 0 40px 80px rgba(0,0,0,0.45); display:flex; flex-direction:column; }
+    .phone::before { content:""; position:absolute; top:10px; left:50%; transform:translateX(-50%); width:110px; height:26px; background:#1c1c1e; border-radius:0 0 14px 14px; z-index:50; }
+    .header { background:linear-gradient(160deg,#071D3D 0%,#0d3a6e 100%); color:#fff; padding:52px 22px 20px; position:relative; }
+    .header h1 { margin:0; font-size:1.25rem; font-weight:700; }
+    .back { position:absolute; top:52px; left:16px; color:#fff; text-decoration:none; font-size:1.1rem; }
+    .content { flex:1; overflow-y:auto; padding:18px 16px 88px; background:var(--bg); }
+    .card { background:#fff; border:1px solid var(--border); border-radius:16px; padding:14px; }
+    label { display:block; font-size:0.75rem; font-weight:700; margin-top:8px; }
+    input, textarea { width:100%; margin-top:4px; padding:10px; border:1px solid var(--border); border-radius:10px; font:inherit; }
+    button { margin-top:12px; width:100%; background:var(--gold); color:var(--navy); border:0; border-radius:12px; padding:12px; font-weight:800; }
+    .note { color:var(--muted); font-size:0.85rem; margin-top:12px; }
+    .nav { position:absolute; bottom:0; left:0; right:0; background:#fff; border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:40; }
+    .nav a { text-align:center; font-size:0.6rem; color:var(--muted); text-decoration:none; }
+    .nav a.active { color:var(--navy); font-weight:700; }
+    @media (max-width:450px) { body { padding:0; } .phone { width:100%; height:100vh; border-radius:0; box-shadow:none; } .phone::before { display:none; } }
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div class="header"><a href="admin.html" class="back">←</a><h1 style="padding-left:28px">Notify</h1></div>
+    <div class="content">
+      <form id="form" class="card">
+        <strong>Send a notification</strong>
+        <label>Customer email<input id="email" type="email" required /></label>
+        <label>Title<input id="title" required /></label>
+        <label>Message<textarea id="body" rows="4" required></textarea></label>
+        <button type="submit">Send to customer</button>
+        <p class="note" id="status">It appears under the bell on that customer’s home screen.</p>
+      </form>
+    </div>
+    <nav class="nav">
+      <a href="admin.html">📊<br>Home</a>
+      <a href="admin-customers.html">👥<br>Customers</a>
+      <a href="admin-approvals.html">✓<br>Approvals</a>
+      <a href="admin-messages.html">✉️<br>Messages</a>
+      <a href="admin-notifications.html" class="active">🔔<br>Notify</a>
+    </nav>
+  </div>
+  <script src="js/api.js"></script>
+  <script>
+    document.getElementById("form").onsubmit = async (e) => {
+      e.preventDefault();
+      const status = document.getElementById("status");
+      try {
+        await api("/api/admin/notifications", {
+          auth: "admin",
+          method: "POST",
+          body: {
+            email: document.getElementById("email").value.trim(),
+            title: document.getElementById("title").value.trim(),
+            body: document.getElementById("body").value.trim(),
+          },
+        });
+        status.textContent = "Notification sent.";
+        document.getElementById("title").value = "";
+        document.getElementById("body").value = "";
+      } catch (ex) {
+        status.textContent = ex.message || "Could not send";
+      }
+    };
+  </script>
+</body>
+</html>
